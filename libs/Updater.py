@@ -34,3 +34,5 @@ def Update():
 def CreateDirs():
 	os.makedirs("Config", exist_ok=True)
 	os.makedirs("Errors", exist_ok=True)
+	os.makedirs("../Outputs", exist_ok=True)
+	os.makedirs("../Imagenes", exist_ok=True)
