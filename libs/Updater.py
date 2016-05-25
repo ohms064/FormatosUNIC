@@ -32,14 +32,7 @@ def Update():
 			archError.write("-------------------------------")
 
 def CreateDirs():
-<<<<<<< HEAD
 	os.makedirs("libs/Config", exist_ok=True)
 	os.makedirs("libs/Errors", exist_ok=True)
 	os.makedirs("Outputs", exist_ok=True)
 	os.makedirs("Imagenes", exist_ok=True)
-=======
-	os.makedirs("Config", exist_ok=True)
-	os.makedirs("Errors", exist_ok=True)
-	os.makedirs("../Outputs", exist_ok=True)
-	os.makedirs("../Imagenes", exist_ok=True)
->>>>>>> acc75acde2318ae65a701caa1ccd068978de8b26

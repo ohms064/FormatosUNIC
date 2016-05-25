@@ -20,11 +20,7 @@ class Manager():
 				self.general = json.load(archConf)
 
 		except (FileNotFoundError, ValueError) as err:
-<<<<<<< HEAD
 			with open("libs/Config/general.conf", "w") as archConf:
-=======
-			with open("Config/general.conf", "w") as archConf:
->>>>>>> acc75acde2318ae65a701caa1ccd068978de8b26
 				self.general = {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }
 				json.dump(self.general, archConf, indent=3)
 		except:
@@ -38,11 +34,7 @@ class Manager():
 				self.inscripcion = json.load(archConf)
 
 		except (FileNotFoundError, ValueError) as err:
-<<<<<<< HEAD
 			with open("libs/Config/inscripcion.conf", "w") as archConf:
-=======
-			with open("Config/inscripcion.conf", "w") as archConf:
->>>>>>> acc75acde2318ae65a701caa1ccd068978de8b26
 				self.inscripcion = {"Output" : "../Outputs", "Inscritos" : 0, "PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], "Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}}
 				json.dump(self.inscripcion, archConf, indent=3)
 		except:
