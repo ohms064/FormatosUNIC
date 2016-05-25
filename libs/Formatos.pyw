@@ -9,55 +9,65 @@ import os
 
 class Manager():
 	def __init__(self):
-		fecha = datetime.datetime.now()
+		self.today = datetime.date.today()
 		self.formatos = Formatos()
-		self.dia = str(fecha.day) + "-" + str(fecha.month) + "-" + str(fecha.year)
 		self.InitConfFiles()
 
 
 	def InitConfFiles(self):
 		try:
-			with open("Config/general.conf", "r") as archConf:
+			with open("libs/Config/general.conf", "r") as archConf:
 				self.general = json.load(archConf)
-				self.general["fecha"] = self.dia	
 
 		except (FileNotFoundError, ValueError) as err:
-			with open("Config/general.conf", "w") as archConf:
-				self.general = {"fecha" : self.dia, "firstRun": True}
+			with open("libs/Config/general.conf", "w") as archConf:
+				self.general = {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }
 				json.dump(self.general, archConf, indent=3)
 		except:
-			with open("Errors/" + self.dia, "a") as archError:
+			with open("Errors/" + self.today, "a") as archError:
 				archError.write("Log: " + fecha)
 				archError.write(sys.exc_info()[0])
 				archError.write("-------------------------------")
 
 		try:
-			with open("Config/inscripcion.conf", "r") as archConf:
+			with open("libs/Config/inscripcion.conf", "r") as archConf:
 				self.inscripcion = json.load(archConf)
 
 		except (FileNotFoundError, ValueError) as err:
-			with open("Config/inscripcion.conf", "w") as archConf:
-				self.inscripcion = {"fecha" : self.dia, "Output" : "../Outputs", "Inscritos" : 0, "PDF Name": ["ID", "Paternal", "Maternal", "Name"]}
+			with open("libs/Config/inscripcion.conf", "w") as archConf:
+				self.inscripcion = {"Output" : "../Outputs", "Inscritos" : 0, "PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], "Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}}
 				json.dump(self.inscripcion, archConf, indent=3)
 		except:
-			with open("Errors/error" + self.dia, "a") as archError:
+			with open("Errors/error" + self.today, "a") as archError:
 				archError.write("Log: " + fecha)
 				archError.write(sys.exc_info()[0])
 				archError.write("-------------------------------")
 
-	def InscripciónLabels(self):
-		return ("Matrícula", "Licenciatura", "Semestre", "Generación", "Foto", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "Calle",\
-			"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
-			"Colonia Empresa", "Polación Empresa", "Nombre del Padre", "Telefóno Particular Padre", "Dirección Padre", "Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
-			"Teléfono Madre", "Dirección Madre", "Negocio Madre", "Celular Madre", "Correo Madre", "¿Enfermedad?", "Enfermedad", "Tipo de Sangre", "Nombre Contacto", "Parentesco", "Teléfono Contacto"\
-			"Celular Contacto", "Correo Contacto", "Dirección Contacto", "Negocio Contacto")
+	def InscripcionLabels(self):
+		return ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
+			"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
+			"Colonia Empresa", "Polación Empresa", "", "Nombre del Padre", "Telefóno Particular Padre", "Dirección Padre", "Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
+			"Teléfono Madre", "Dirección Madre", "Negocio Madre", "Celular Madre", "Correo Madre", "", "¿Enfermedad?", "Enfermedad", "Tipo de Sangre", "Nombre Contacto", "Parentesco", "Teléfono Contacto",\
+			"Celular Contacto", "Correo Contacto", "Dirección Contacto", "Negocio Contacto", "Fecha"]
 
 	def InscripcionValues(self):
-		return ("ID", "Career", "Semester", "Generation", "Photo", "Paternal", "Maternal", "Name", "Birthplace", "Birthday", "Nationality", "Street", \
-			"Number" , "Colony", "Town" , "Township" , "State", "C.P." , "Phone" , "Cellphone", "Email", "Business", "Business' Phone", "Business' Street", "Business' Number", \
-			"Business' Colony", "Business' Town", "Father", "Father's Phone","Father's Adress", "Father's Business", "Father's Cellphone", "Father's Email", "Mother", \
-			"Mother's Phone", "Mother's Adress", "Mother's Business", "Mother's Cellphone", "Mother's Email", "IllnessY/N", "Illness", "Bloodtype", "Contact", "Contact Relationship","Contact's Phone", \
-			"Contact's Cellphone", "Contact's Email","Contact's Adress", "Contact's Business")
+		return ["ID", "Career", "Semester", "Generation" , "Photo", "", "Paternal", "Maternal", "Name", "Birthplace", "Birthday", "Nationality", "", "Street", \
+			"Number" , "Colony", "Town" , "Township" , "State", "C.P." , "Phone" , "Cellphone", "Email", "", "Business", "Business' Phone", "Business' Street", "Business' Number", \
+			"Business' Colony", "Business' Town", "", "Father", "Father's Phone","Father's Adress", "Father's Business", "Father's Cellphone", "Father's Email", "Mother", \
+			"Mother's Phone", "Mother's Adress", "Mother's Business", "Mother's Cellphone", "Mother's Email", "", "IllnessY/N", "Illness", "Bloodtype", "Contact", "Contact Relationship","Contact's Phone", \
+			"Contact's Cellphone", "Contact's Email","Contact's Adress", "Contact's Business", "Date"]
+
+	def InscripcionDropList(self):
+		return ("Licenciatura", "Tipo de Sangre")
+
+	def InscripcionFiles(self):
+		return ("Foto")
+
+	def InscripcionCheck(self):
+		return ("¿Enfermedad?")
+
+	def InscripcionDate(self):
+		return ("Fecha de Nacimiento")
 
 class newline(CommandBase):
 	_latex_name = "newline"
@@ -81,11 +91,7 @@ def makeUnderline(cadena, size):
 	return underline(NoEscape(makebox(cadena, options="{}in".format(size)).dumps())).dumps()
 
 class Formatos():
-	def __init__(self):
-		
-		self.PAE1 = Document()
-		self.PAE2 = Document()
-		
+
 	def FormatoInscripcion(self, enrollDict):
 		
 		def InsDatosEscolares(inscripcion, enrollDict):
