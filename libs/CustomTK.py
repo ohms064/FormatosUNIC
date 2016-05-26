@@ -40,16 +40,17 @@ class UserForm(tk.Frame):
 		tk.Frame.__init__(self, master)
 		self.done = done
 		self.fileBox = fileBox
-		self._Form(rows, col_size, keyLabels, listBox, dateBox, checkBox, defaultValues, choices, formValues)
+		self.formValues = formValues
+		self._Form(rows, col_size, keyLabels, listBox, dateBox, checkBox, defaultValues, choices)
 
 	def CreateWidgets(self):
 		pass
 		
-	def _Form(self, rows, col_size, keyLabels, listBox, dateBox, checkBox, defaultValues, choices, formValues):
+	def _Form(self, rows, col_size, keyLabels, listBox, dateBox, checkBox, defaultValues, choices):
 		"""
 		Creates the widgets for the UserForm
 		"""
-		self.formValues = formValues
+		
 		iter_row = 0 
 		iter_col = 0
 		max_row = -1

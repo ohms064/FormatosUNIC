@@ -45,20 +45,20 @@ class FormatosGUI(tk.Frame):
 		listKeys = self._manager.InscripcionDropList()
 		dateKeys = self._manager.InscripcionDate()
 		fileKeys = self._manager.InscripcionFiles()
-		choicesDict = self._manager.general
-		choicesDict.update(self._manager.inscripcion["Choices"])
+		choicesDict = self._manager.generalJSON
+		choicesDict.update(self._manager.inscripcionJSON["Choices"])
 		defaultDict = {"Semestre": "{}-1".format(self._manager.today.year) if int(self._manager.today.month) > 6 else "{}-2".format(self._manager.today.year - 1)}
-		UserForm(self.frame, self.done, rows=11, col_size=5, \
+		UserForm(self.frame, self.done, rows=13, col_size=5, \
 			keyLabels=keys, listBox=listKeys, dateBox=dateKeys, fileBox=fileKeys, \
-			choices=choicesDict, defaultValues=defaultDict, formValues=self._manager.inscripcionDict)
+			choices=choicesDict, defaultValues=defaultDict, formValues=self._manager.inscripcion.data)
 		self.frame.grid(row=0, column=0)
-		self.master.geometry("1700x350")
+		self.master.geometry("1700x375")
 		self.master.wait_variable(self.done)
 		self.done.set(False)
 		self.CrearFormatoInscripcion()
 
 	def CrearFormatoInscripcion(self):
-		self._manager.CreateFormatoInscripcion(self._manager.inscripcionDict)
+		self._manager.CreateFormatoInscripcion(self._manager.inscripcion.data)
 		self.frame.destroy()
 		self.CreateWidgets()
 		self.AbrirInscripcion()
