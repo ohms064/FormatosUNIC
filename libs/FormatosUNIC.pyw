@@ -58,7 +58,7 @@ class FormatosGUI(tk.Frame):
 		self.CrearFormatoInscripcion()
 
 	def CrearFormatoInscripcion(self):
-		self._manager.formatos.FormatoInscripcion(self._manager.inscripcionDict)
+		self._manager.CreateFormatoInscripcion(self._manager.inscripcionDict)
 		self.frame.destroy()
 		self.CreateWidgets()
 		self.AbrirInscripcion()

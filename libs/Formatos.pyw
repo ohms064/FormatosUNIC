@@ -6,6 +6,7 @@ from collections import defaultdict, OrderedDict
 import json
 import datetime
 import os
+import csv
 
 class Manager():
 	def __init__(self):
@@ -17,32 +18,24 @@ class Manager():
 
 	def InitConfFiles(self):
 		try:
-			with open("libs/Config/general.conf", "r") as archConf:
+			with open("libs/Config/general.conf", "r", encoding='utf8') as archConf:
 				self.general = json.load(archConf)
 
 		except (FileNotFoundError, ValueError) as err:
 			with open("libs/Config/general.conf", "w") as archConf:
 				self.general = {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }
-				json.dump(self.general, archConf, indent=3)
-		except:
-			with open("Errors/" + self.today, "a") as archError:
-				archError.write("Log: " + fecha)
-				archError.write(sys.exc_info()[0])
-				archError.write("-------------------------------")
+				json.dump(self.general, archConf, indent=3, ensure_ascii=False)
 
 		try:
-			with open("libs/Config/inscripcion.conf", "r") as archConf:
+			with open("libs/Config/inscripcion.conf", "r", encoding='utf8') as archConf:
 				self.inscripcion = json.load(archConf)
-
 		except (FileNotFoundError, ValueError) as err:
 			with open("libs/Config/inscripcion.conf", "w") as archConf:
-				self.inscripcion = {"Output" : "../Outputs", "Inscritos" : 0, "PDF Nombre": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], "Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}}
-				json.dump(self.inscripcion, archConf, indent=3)
-		except:
-			with open("Errors/error" + self.today, "a") as archError:
-				archError.write("Log: " + fecha)
-				archError.write(sys.exc_info()[0])
-				archError.write("-------------------------------")
+				self.inscripcion = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
+				"PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], \
+				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]},\
+				}
+				json.dump(self.inscripcion, archConf, indent=3, ensure_ascii=False)
 
 	def InscripcionLabels(self):
 		return ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
@@ -62,6 +55,9 @@ class Manager():
 
 	def InscripcionDate(self):
 		return ("Fecha de Nacimiento")
+
+	def CreateFormatoInscripcion(self, inscripcionDict):
+		self.formatos.FormatoInscripcion(inscripcionDict, self.inscripcion["PDF Name"], self.inscripcion["Output"])
 
 class newline(CommandBase):
 	_latex_name = "newline"
@@ -86,11 +82,11 @@ def makeUnderline(cadena, size):
 
 class Formatos():
 
-	def FormatoInscripcion(self, enrollDict):
+	def FormatoInscripcion(self, enrollDict, outputNameRef=[""], outputDir=""):
 		
 		def InsDatosEscolares(inscripcion, enrollDict, hasImage):
 
-			with inscripcion.create(Tabular(NoEscape("m{0.7in}m{0.6in}m{0.9in}m{1.5in}m{2.3in}"))) as table:
+			with inscripcion.create(Tabular(NoEscape("m{0.8in}m{0.6in}m{0.9in}m{1.5in}m{2.3in}"))) as table:
 				if hasImage:
 					image = MultiRow(3, data=Command("includegraphics", NoEscape(enrollDict["Foto"][enrollDict["Foto"].rfind("/") + 1:][:enrollDict["Foto"].rfind(".")]),["width=1.5in", "height=1in"]))					
 				else:
@@ -114,7 +110,7 @@ class Formatos():
 			
 		def InsDatosDomicilio(inscripcion, enrollDict):
 			with inscripcion.create(SectionUnnumbered("Domicilio Particular")):
-				with inscripcion.create(Tabular(NoEscape("m{1.33in}m{0.5in}m{2in}m{2in}"))) as table:
+				with inscripcion.create(Tabular(NoEscape("m{1.33in}m{0.6in}m{2in}m{1.9in}"))) as table:
 					table.add_row((enrollDict["Calle"], enrollDict["Número"], enrollDict["Colonia"], enrollDict["Población"]))
 					table.add_hline()
 					table.add_row((bold("Calle"), bold("Número"), bold("Colonia"), bold("Poblacion")))
@@ -136,7 +132,7 @@ class Formatos():
 					.format(bold("Empresa o Institución"), makeUnderline(enrollDict["Empresa"], 2.5),bold("Teléfono"), makeUnderline(enrollDict["Teléfono Empresa"], 1.65))
 					))
 
-				with inscripcion.create(Tabular(NoEscape("m{1.3in}m{0.5in}m{2in}m{2in}"))) as table:
+				with inscripcion.create(Tabular(NoEscape("m{1.3in}m{0.6in}m{2in}m{1.9in}"))) as table:
 					table.add_row((enrollDict["Calle Empresa"], enrollDict["Número Empresa"], enrollDict["Colonia Empresa"], enrollDict["Municipio Empresa"]))
 					table.add_hline()
 					table.add_row((bold("Calle"), bold("Número"), bold("Colonia"), bold("Municipio")))
@@ -187,6 +183,8 @@ class Formatos():
 					.format(bold("Domicilio"), makeUnderline(enrollDict["Dirección Contacto"], 3.35),bold("Empresa"), makeUnderline(enrollDict["Negocio Contacto"], 1.63))
 					))
 
+		if outputDir is "":
+			outputDir = os.sys.path[0]
 		self.inscripcion = Document()
 
 		hasImage = enrollDict["Foto"] != ""
@@ -195,10 +193,10 @@ class Formatos():
 		self.inscripcion.packages.append(Package("array"))
 		self.inscripcion.packages.append(Package("fullpage"))
 
-		#self.inscripcion.preamble.append(Command("addtolength", arguments=Command("voffset"), extra_arguments=NoEscape("0.5in")))
 		self.inscripcion.preamble.append(Command("title", bold(NoEscape(r"Solicidutd de Inscripción"))))
 		self.inscripcion.preamble.append(Command('date', NoEscape(r"\vspace{-12ex}")))
 		self.inscripcion.preamble.append(Command("pagenumbering", "gobble"))
+		self.inscripcion.preamble.append(Command("hfuzz=2cm"))
 		if hasImage:
 			self.inscripcion.packages.append(Package("graphicx"))
 			self.inscripcion.preamble.append(Command("graphicspath", NoEscape("{}".format("{" + enrollDict["Foto"][:enrollDict["Foto"].rfind("/")] +"/}"))))
@@ -214,72 +212,16 @@ class Formatos():
 		InsDatosEmergencia(self.inscripcion, enrollDict)
 
 		self.inscripcion.append(NoEscape("{} {}: {}".format(Command("hfill").dumps(), bold("Fecha"), enrollDict["Fecha"])))
-		self.inscripcion.generate_tex("Outputs/outputIns")
+
+		outputName = str("{}_" * len(outputNameRef)).format(*[enrollDict[x] for x in outputNameRef])[:-1]
+
+		self.inscripcion.generate_tex("{}/{}".format("Outputs", outputName))
+		os.system("{} {}/{}.tex -output-directory={}".format("pdflatex", "Outputs", outputName, outputDir))
+		os.startfile("{}/{}.pdf".format(outputDir, outputName))
 
 	def FormatoPAE(self, paeDict):
 		pass
 
+class CSVLink:
+	pass
 
-if __name__ == "__main__":
-	f = Formatos()
-	personal = defaultdict(str)
-
-	personal["Matrícula"] = "308633184"
-	personal["Career"] = "Computer Engineering"
-	personal["Semestre"] = "2016-2"
-	personal["Generation"] = "2011-1"
-	personal["Foto"] = "../Imagenes/omar2.jpg"
-
-	personal["Apellido Paterno"] = "Rodríguez"
-	personal["Apellido Materno"] = "Pérez"
-	personal["Nombre"] = "Omar"
-	personal["Lugar de Nacimiento"] = "Cuernavaca"
-	personal["Fecha de Nacimiento"] = "22/02/1992"
-	personal["Nacionalidad"] = "Mexicana"
-
-	personal["Street"] = "Av. Universidad"
-	personal["Number"] = "2014"
-	personal["Colony"] = "Romero de Terreros"
-	personal["Town"] = "Coyoacán"
-	personal["Township"] = "Coyoacán"
-	personal["State"] = "Ciudad de México"
-	personal["C.P."] = 56520
-	personal["Phone"] = 56592180
-	personal["Cellphone"] = 7771481259
-	personal["Email"] = "otokonoko064@gmail.com"
-
-	personal["Business"] = "Quetzal Studio"
-	personal["Business' Phone"] = "56592180"
-	personal["Business' Street"] = "Benito Juarez"
-	personal["Business' Number"] = 2
-	personal["Buseness' Colony"] = "Copilco"
-	personal["Business' Town"] = "Coyoacán"
-
-	personal["Father"] = "Alfonso Rodríguez Nájera"
-	personal["Father's Phone"] = ""
-	personal["Father's Adress"] = "Not an earthly one at least"
-	personal["Father's Business"] = ""
-	personal["Father's Cellphone"] = ""
-	personal["Father's Email"] = ""
-	personal["Mother"] = "Diana Pérez Brito"
-	personal["Mother's Phone"] = "3189538"
-	personal["Mother's Adress"] = "Av. Los Cizos #2 Acapatzingo"
-	personal["Mother's Business"] = "Universidad Cuauhnáhuac"
-	personal["Mother's Cellphone"] = 777507402
-	personal["Mother's Email"] = "dpbrito@hotmail.com"
-
-	personal["IllnessY/N"] = "Si"
-	personal["Illness"] = "Poca visión en el ojo derecho"
-	personal["Bloodtype"] = "O+"
-	personal["Contact"] = "Diana Pérez Brito"
-	personal["Contact Relationship"] = "Mamá"
-	personal["Contact's Phone"] = 3189538
-	personal["Contact's Cellphone"] = 7772507402
-	personal["Contact's Email"] = "dpbrito@hotmail.com"
-	personal["Contact's Adress"] = "Av. Los Cizos #2 Acapatzingo"
-	personal["Contact's Business"] = "UNIC"
-
-
-	f.FormatoInscripcion(personal)
-
-	f.inscripcion.generate_tex("../Outputs/outputIns")
