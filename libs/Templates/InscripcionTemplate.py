@@ -1,92 +1,9 @@
-
-from pylatex import Document, Section, Subsection, Subsubsection, Command, Package, Tabular, MultiRow
-from pylatex.utils import italic, NoEscape, bold
-from pylatex.base_classes import CommandBase
-from collections import defaultdict, OrderedDict
-import json
-import datetime
+from pylatex import Command, Package, Tabular, MultiRow
+from pylatex.utils import NoEscape, bold
 import os
-import csv
+from libs.CustomPyLatex import *
+from libs.Templates.BaseTemplate import Formato
 
-class Manager():
-	def __init__(self):
-		self.today = datetime.date.today()
-		self.inscripcion = Inscripcion()
-		self.InitConfFiles()
-
-
-	def InitConfFiles(self):
-		try:
-			with open("libs/Config/general.conf", "r", encoding='utf8') as archConf:
-				self.generalJSON = json.load(archConf)
-
-		except (FileNotFoundError, ValueError) as err:
-			with open("libs/Config/general.conf", "w") as archConf:
-				self.generalJSON = {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }
-				json.dump(self.generalJSON, archConf, indent=3, ensure_ascii=False)
-
-		try:
-			with open("libs/Config/doc.conf", "r", encoding='utf8') as archConf:
-				self.inscripcionJSON = json.load(archConf)
-		except (FileNotFoundError, ValueError) as err:
-			with open("libs/Config/doc.conf", "w") as archConf:
-				self.inscripcionJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
-				"PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], \
-				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]},\
-				"CSV": "H:/Documentos/Trabajo/UNIC/Outputs/Inscritos.csv"\
-				}
-				json.dump(self.inscripcionJSON, archConf, indent=3, ensure_ascii=False)
-
-	def InscripcionLabels(self):
-		return ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
-			"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
-			"Colonia Empresa", "Municipio Empresa", "", "Nombre del Padre", "Teléfono Padre", "Dirección Padre", "Negocio Padre", "Teléfono Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
-			"Teléfono Madre", "Dirección Madre", "Negocio Madre", "Teléfono Negocio Madre" ,"Celular Madre", "Correo Madre", "", "¿Enfermedad?", "Enfermedad", "Tipo de Sangre", "Nombre Contacto", "Parentesco", "Teléfono Contacto",\
-			"Celular Contacto", "Correo Contacto", "Dirección Contacto", "Negocio Contacto", "Fecha"]
-
-	def InscripcionDropList(self):
-		return ("Licenciatura", "Tipo de Sangre")
-
-	def InscripcionFiles(self):
-		return ("Foto")
-
-	def InscripcionCheck(self):
-		return ("¿Enfermedad?")
-
-	def InscripcionDate(self):
-		return ("Fecha de Nacimiento")
-
-	def CreateFormatoInscripcion(self, inscripcionDict):
-		self.inscripcion.CreateDoc(inscripcionDict, self.inscripcionJSON["PDF Name"], self.inscripcionJSON["Output"])
-
-class newline(CommandBase):
-	_latex_name = "newline"
-
-class SectionUnnumbered(Section):
-	_latex_name = "section*"
-
-class SubsectionUnnumbered(Subsection):
-	_latex_name = "subsection*"
-
-class SubsubsectionUnnumbered(Subsubsection):
-	_latex_name = "subsubsection*"
-
-class makebox(CommandBase):
-	_latex_name = "makebox"
-
-class underline(CommandBase):
-	_latex_name = "underline"
-
-def makeUnderline(cadena, size):
-	return underline(NoEscape(makebox(cadena, options="{}in".format(size)).dumps())).dumps()
-
-class Formato():
-	def __init__(self):
-		self.doc = Document()
-		self.data = dict()
-
-	def CreateDoc(self, dataDict, outputNameRef=[""], outputDir=""):
-		pass
 
 class Inscripcion(Formato):
 
@@ -99,8 +16,8 @@ class Inscripcion(Formato):
 					image = MultiRow(3, data=Command("includegraphics", NoEscape(enrollDict["Foto"][enrollDict["Foto"].rfind("/") + 1:][:enrollDict["Foto"].rfind(".")]),["width=1.5in", "height=1in"]))					
 				else:
 					image = ""
-				table.add_row(("","","","", image))
 				table.add_row(("","","","",""))
+				table.add_row(("","","","", image))
 				table.add_row((bold("Matrícula: "), enrollDict["Matrícula"], bold("Licenciatura: "), enrollDict["Licenciatura"], ""))
 				table.add_row((bold("Semestre: "),enrollDict["Semestre"], bold("Generación: "), enrollDict["Generación"], ""))
 
@@ -118,6 +35,7 @@ class Inscripcion(Formato):
 			
 		def InsDatosDomicilio(enrollDict):
 			with self.doc.create(SectionUnnumbered("Domicilio Particular")):
+				Command("vspace", NoEscape("-1ex"))
 				with self.doc.create(Tabular(NoEscape("m{1.33in}m{0.6in}m{2in}m{1.9in}"))) as table:
 					table.add_row((enrollDict["Calle"], enrollDict["Número"], enrollDict["Colonia"], enrollDict["Población"]))
 					table.add_hline()
@@ -135,6 +53,7 @@ class Inscripcion(Formato):
 
 		def InsDatosTrabajo(enrollDict):
 			with self.doc.create(SectionUnnumbered("Datos del Trabajo")):
+				Command("vspace", NoEscape("-1ex"))
 				self.doc.append(NoEscape(\
 					r"{}: {} {}: {}\\"\
 					.format(bold("Empresa o Institución"), makeUnderline(enrollDict["Empresa"], 2.5),bold("Teléfono"), makeUnderline(enrollDict["Teléfono Empresa"], 1.65))
@@ -147,6 +66,7 @@ class Inscripcion(Formato):
 
 		def InsDatosFamiliares(enrollDict):
 			with self.doc.create(SectionUnnumbered("Datos Familiares")):
+				Command("vspace", NoEscape("-1ex"))
 				self.doc.append(NoEscape(\
 					r"{}: {} {}: {}\\{}: {} {}: {}\\"\
 					.format(bold("Nombre del Padre"), makeUnderline(enrollDict["Nombre del Padre"], 2.75),bold("Teléfono"), makeUnderline(enrollDict["Teléfono Padre"], 1.65),\
@@ -171,6 +91,7 @@ class Inscripcion(Formato):
 		
 		def InsDatosEmergencia(enrollDict):
 			with self.doc.create(SectionUnnumbered("En caso de emergencia")):
+				Command("vspace", NoEscape("-1ex"))
 				self.doc.append(NoEscape(\
 					r"{}{} {}: {} \\{}: {}\\"\
 					.format(bold("¿Padece alguna enfermedad?"), makeUnderline(enrollDict["¿Enfermedad?"], 0.2),bold("Especifique"), makeUnderline(enrollDict["Enfermedad"], 3.4), bold("Tipo de Sangre"), makeUnderline(enrollDict["Tipo de Sangre"], .5))
@@ -193,7 +114,7 @@ class Inscripcion(Formato):
 
 		if outputDir is "":
 			outputDir = os.sys.path[0]
-		self.doc = Document()
+		#self.doc = Document()
 
 		hasImage = enrollDict["Foto"] != ""
 		
@@ -201,8 +122,8 @@ class Inscripcion(Formato):
 		self.doc.packages.append(Package("array"))
 		self.doc.packages.append(Package("fullpage"))
 
-		self.doc.preamble.append(Command("title", bold(NoEscape(r"Solicidutd de Inscripción"))))
-		self.doc.preamble.append(Command('date', NoEscape(r"\vspace{-12ex}")))
+		self.doc.preamble.append(Command("title", bold(NoEscape(r"Solicitud de Inscripción"))))
+		self.doc.preamble.append(Command('date', Command("vspace", NoEscape("-15ex"))))
 		self.doc.preamble.append(Command("pagenumbering", "gobble"))
 		self.doc.preamble.append(Command("hfuzz=2cm"))
 		if hasImage:
@@ -231,7 +152,3 @@ class Inscripcion(Formato):
 
 	def FormatoPAE(self, paeDict):
 		pass
-
-class CSVLink:
-	pass
-
