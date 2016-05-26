@@ -177,7 +177,7 @@ class CSVTable:
 
 
 
-
-CreateDirs()
-Update()
-BeginLoop()
+if __name__ == "__main__":
+	CreateDirs()
+	Update()
+	BeginLoop()
