@@ -4,6 +4,7 @@ from tkinter import messagebox as mb
 from libs.CustomTK import UserForm
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
+from collections import defaultdict
 import os
 import subprocess 
 import json
@@ -74,7 +75,7 @@ class FormatosGUI(tk.Frame):
 		self.CrearFormatoInscripcion()
 
 	def CrearFormatoInscripcion(self):
-		self._manager.CreateFormatoInscripcion(self._manager.inscripcion.data)
+		self._manager.CreateInscripcion()
 		self.frame.destroy()
 		self.CreateWidgets()
 		self.AbrirInscripcion()
@@ -99,9 +100,12 @@ def CreateDirs():
 class Manager():
 	def __init__(self):
 		self.today = datetime.date.today()
-		self.inscripcion = Inscripcion()
 		self.InitConfFiles()
-
+		self.inscripcion = Inscripcion()
+		csvLabels = self.InscripcionLabels()
+		csvLabels.remove("Foto")
+		print(csvLabels)
+		self.inscripcionCSV = CSVTable(self.inscripcionJSON["CSV"], csvLabels)
 
 	def InitConfFiles(self):
 		try:
@@ -114,10 +118,10 @@ class Manager():
 				json.dump(self.generalJSON, archConf, indent=3, ensure_ascii=False)
 
 		try:
-			with open("Config/doc.conf", "r", encoding='utf8') as archConf:
+			with open("Config/inscripcion.conf", "r", encoding='utf8') as archConf:
 				self.inscripcionJSON = json.load(archConf)
 		except (FileNotFoundError, ValueError) as err:
-			with open("Config/doc.conf", "w") as archConf:
+			with open("Config/inscripcion.conf", "w") as archConf:
 				self.inscripcionJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
 				"PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], \
 				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]},\
@@ -144,8 +148,35 @@ class Manager():
 	def InscripcionDate(self):
 		return ("Fecha de Nacimiento")
 
-	def CreateFormatoInscripcion(self, inscripcionDict):
-		self.inscripcion.CreateDoc(inscripcionDict, self.inscripcionJSON["PDF Name"], self.inscripcionJSON["Output"])
+	def CreateInscripcion(self):
+		self.inscripcion.CreateDoc(self.inscripcionJSON["PDF Name"], self.inscripcionJSON["Output"])
+		self.inscripcionCSV.WriteRow(self.inscripcion.data.copy())
+
+class CSVTable:
+	def __init__(self, filename, columnsName):
+		self.filename = filename
+		self.rowLenght = len(columnsName)
+		try:
+			with open(self.filename, "r", encoding='utf8') as csvFile:
+				self.columnsOrder = csvFile.readline().split(",")
+		except FileNotFoundError:
+			with open(self.filename, "w", encoding='utf8') as csvFile:
+				csvFile.write(str("{}," * self.rowLenght).format(*columnsName)[:-1] + "\n")
+				self.columnsOrder = columnsName
+
+	def WriteRow(self, dictRow):
+		row = str("{}," * self.rowLenght).format(*[dictRow[data] for data in self.columnsOrder])
+		with open(self.filename, "a", encoding='utf8') as csvFile:
+			csvFile.write("{}\n".format(row))
+
+	def __iter__(self):
+		with open(filename, "r", encoding='utf8') as csvFile:
+			for line in csvFile:
+				yield line
+
+
+
+
 
 CreateDirs()
 Update()
