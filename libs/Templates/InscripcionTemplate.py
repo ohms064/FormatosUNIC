@@ -142,7 +142,8 @@ class Inscripcion(Formato):
 
 		self.doc.append(NoEscape("{} {}: {}".format(Command("hfill").dumps(), bold("Fecha"), self.data["Fecha"])))
 
-		outputName = str("{}_" * len(outputNameRef)).format(*[self.data[x] for x in outputNameRef])[:-1]
+		outputName = "Inscripción_" + str("{}_" * len(outputNameRef)).format(*[self.data[x] for x in outputNameRef])[:-1]
+		outputName = outputName.replace(" ", "_")
 
 		self.doc.generate_tex("{}/{}".format("Outputs", outputName))
 		os.system("{} {}/{}.tex -output-directory={}".format("pdflatex", "Outputs", outputName, outputDir))

@@ -1,4 +1,5 @@
 from libs.Templates.InscripcionTemplate import Inscripcion
+from libs.Templates.PAETemplate import PAE
 import tkinter as tk
 from tkinter import messagebox as mb
 from libs.CustomTK import UserForm
@@ -51,22 +52,22 @@ class FormatosGUI(tk.Frame):
 		self.fileMenu.add_command(label="Salir", command=self.OnCloseWindow)
 		self.formatosMenu = tk.Menu(self.menubar, tearoff=0)
 		self.formatosMenu.add_command(label="Inscripción", command=self.AbrirInscripcion)
-		self.formatosMenu.add_command(label="PAE")
-		self.formatosMenu.add_command(label="PAE2")
+		self.formatosMenu.add_command(label="PAE", command=self.AbrirPAE)
 		self.menubar.add_cascade(label="Archivo", menu=self.fileMenu)
 		self.menubar.add_cascade(label="Formatos", menu=self.formatosMenu)
 		self.master.config(menu=self.menubar)
 
 	def AbrirInscripcion(self):
-		keys = self._manager.InscripcionLabels()
-		listKeys = self._manager.InscripcionDropList()
-		dateKeys = self._manager.InscripcionDate()
-		fileKeys = self._manager.InscripcionFiles()
-		choicesDict = self._manager.generalJSON
+		self.frame.destroy()
+		self.CreateWidgets()
+		keys = self._manager.inscripcionJSON["Labels"]
+		dateKeys = self._manager.inscripcionJSON["Date"]
+		fileKeys = self._manager.inscripcionJSON["Files"]
+		choicesDict = self._manager.generalJSON["Choices"]
 		choicesDict.update(self._manager.inscripcionJSON["Choices"])
-		defaultDict = {"Semestre": "{}-1".format(self._manager.today.year) if int(self._manager.today.month) > 6 else "{}-2".format(self._manager.today.year - 1)}
+		defaultDict = {"Semestre": self._manager.generalJSON["Semestre"]}
 		UserForm(self.frame, self.done, rows=13, col_size=5, \
-			keyLabels=keys, listBox=listKeys, dateBox=dateKeys, fileBox=fileKeys, \
+			keyLabels=keys, dateBox=dateKeys, fileBox=fileKeys, \
 			choices=choicesDict, defaultValues=defaultDict, formValues=self._manager.inscripcion.data)
 		self.frame.grid(row=0, column=0)
 		self.master.geometry("1700x375")
@@ -74,12 +75,31 @@ class FormatosGUI(tk.Frame):
 		self.done.set(False)
 		self.CrearFormatoInscripcion()
 
-	def CrearFormatoInscripcion(self):
-		self._manager.CreateInscripcion()
+	def AbrirPAE(self):
 		self.frame.destroy()
 		self.CreateWidgets()
+		keys = self._manager.paeJSON["Labels"]
+		dateKeys = self._manager.paeJSON["Date"]
+		fileKeys = self._manager.paeJSON["Files"]
+		choicesDict = self._manager.paeJSON["Choices"]
+		choicesDict.update(self._manager.generalJSON["Choices"])
+		defaultDict = {"Semestre": self._manager.generalJSON["Semestre"]}
+		UserForm(self.frame, self.done, rows=6, col_size=5, \
+			keyLabels=keys, dateBox=dateKeys, fileBox=fileKeys, \
+			choices=choicesDict, defaultValues=defaultDict, formValues=self._manager.pae.data)
+		self.frame.grid(row=0, column=0)
+		self.master.geometry("600x225")
+		self.master.wait_variable(self.done)
+		self.done.set(False)
+		self.CrearFormatoPAE()
+
+	def CrearFormatoInscripcion(self):
+		self._manager.CreateInscripcion()
 		self.AbrirInscripcion()
-		self.master.geometry("300x25")
+
+	def CrearFormatoPAE(self):
+		self._manager.CreatePAE()
+		self.AbrirPAE()
 
 	def OnCloseWindow(self):
 		del self._manager
@@ -100,57 +120,87 @@ def CreateDirs():
 class Manager():
 	def __init__(self):
 		self.today = datetime.date.today()
-		self.InitConfFiles()
 		self.inscripcion = Inscripcion()
-		csvLabels = self.InscripcionLabels()
+		self.pae = PAE()
+		self.InitConfFiles()
+		csvLabels = self.inscripcionJSON["Labels"].copy()
 		csvLabels.remove("Foto")
-		print(csvLabels)
 		self.inscripcionCSV = CSVTable(self.inscripcionJSON["CSV"], csvLabels)
+		csvLabels = self.paeJSON["Labels"].copy()
+		csvLabels.remove("Foto")
+		self.paeCSV = CSVTable(self.paeJSON["CSV"], csvLabels)
+		del csvLabels
 
 	def InitConfFiles(self):
 		try:
 			with open("Config/general.conf", "r", encoding='utf8') as archConf:
 				self.generalJSON = json.load(archConf)
+				self.generalJSON["Semestre"] = "{}-1".format(self.today.year) if int(self.today.month) > 6 else "{}-2".format(self.today.year - 1)
 
 		except (FileNotFoundError, ValueError) as err:
-			with open("Config/general.conf", "w") as archConf:
-				self.generalJSON = {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }
+			with open("Config/general.conf", "w", encoding='utf8') as archConf:
+				self.generalJSON = {"Choices" : {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }}
+				self.generalJSON["Semestre"] = "{}-1".format(self.today.year) if int(self.today.month) > 6 else "{}-2".format(self.today.year - 1)
 				json.dump(self.generalJSON, archConf, indent=3, ensure_ascii=False)
 
 		try:
 			with open("Config/inscripcion.conf", "r", encoding='utf8') as archConf:
 				self.inscripcionJSON = json.load(archConf)
 		except (FileNotFoundError, ValueError) as err:
-			with open("Config/inscripcion.conf", "w") as archConf:
+			with open("Config/inscripcion.conf", "w", encoding='utf8') as archConf:
 				self.inscripcionJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
 				"PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], \
-				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]},\
-				"CSV": "H:/Documentos/Trabajo/UNIC/Outputs/Inscritos.csv"\
+				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], "¿Enfermedad?": ["Sí","No"]},\
+				"CSV": "H:/Documentos/Trabajo/UNIC/Outputs/Inscritos.csv",\
+				"Labels": ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
+					"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
+					"Colonia Empresa", "Municipio Empresa", "", "Nombre del Padre", "Teléfono Padre", "Dirección Padre", "Negocio Padre", "Teléfono Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
+					"Teléfono Madre", "Dirección Madre", "Negocio Madre", "Teléfono Negocio Madre" ,"Celular Madre", "Correo Madre", "", "¿Enfermedad?", "Enfermedad", "Tipo de Sangre", "Nombre Contacto", "Parentesco", "Teléfono Contacto",\
+					"Celular Contacto", "Correo Contacto", "Dirección Contacto", "Negocio Contacto", "Fecha"],\
+				"Drop List": ["Licenciatura", "Tipo de Sangre"],\
+				"Files" : ["Foto"],\
+				"Date" : ["Fecha de Nacimiento", "Fecha"],\
 				}
 				json.dump(self.inscripcionJSON, archConf, indent=3, ensure_ascii=False)
 
-	def InscripcionLabels(self):
-		return ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
-			"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
-			"Colonia Empresa", "Municipio Empresa", "", "Nombre del Padre", "Teléfono Padre", "Dirección Padre", "Negocio Padre", "Teléfono Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
-			"Teléfono Madre", "Dirección Madre", "Negocio Madre", "Teléfono Negocio Madre" ,"Celular Madre", "Correo Madre", "", "¿Enfermedad?", "Enfermedad", "Tipo de Sangre", "Nombre Contacto", "Parentesco", "Teléfono Contacto",\
-			"Celular Contacto", "Correo Contacto", "Dirección Contacto", "Negocio Contacto", "Fecha"]
-
-	def InscripcionDropList(self):
-		return ("Licenciatura", "Tipo de Sangre")
-
-	def InscripcionFiles(self):
-		return ("Foto")
-
-	def InscripcionCheck(self):
-		return ("¿Enfermedad?")
-
-	def InscripcionDate(self):
-		return ("Fecha de Nacimiento")
+		try:
+			with open("Config/pae.conf", "r", encoding='utf8') as archConf:
+				self.paeJSON = json.load(archConf)
+		except (FileNotFoundError, ValueError) as err:
+			with open("Config/pae.conf", "w", encoding='utf8') as archConf:
+				self.paeJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
+				"PDF Name": ["Matrícula", "Nombre"], \
+				"Choices": {"Turno":["Vespertino", "Matutino", "Sabatino"], \
+				"Porcentaje" :[ "30", "40", "50", "55"],\
+				"Promedio Mínimo":["8.0", "8.5", "9.0", "9.5"],\
+				"Asistencia Mínima": ["80"]},\
+				"CSV": "H:/Documentos/Trabajo/UNIC/Outputs/PAE.csv",\
+				"Labels": ["Foto", "Porcentaje", "Nombre", "Matrícula", "Licenciatura", \
+					"Turno", "Semestre", "Generación", "Primer Ciclo Escolar",  "Promedio Mínimo", "Asistencia Mínima", "Fecha"],\
+				"Files" : ["Foto"],\
+				"Date" : ["Fecha"],\
+				}
+				json.dump(self.paeJSON, archConf, indent=3, ensure_ascii=False)
 
 	def CreateInscripcion(self):
 		self.inscripcion.CreateDoc(self.inscripcionJSON["PDF Name"], self.inscripcionJSON["Output"])
+		self.inscripcion.Flush()
 		self.inscripcionCSV.WriteRow(self.inscripcion.data.copy())
+
+	def CreatePAE(self):
+		self.pae.CreateDoc(self.paeJSON["PDF Name"], self.paeJSON["Output"])
+		self.pae.Flush()
+		self.paeCSV.WriteRow(self.pae.data.copy())
+
+	def __del__(self):
+		with open("Config/inscripcion.conf", "w", encoding='utf8') as archConf:
+			json.dump(self.inscripcionJSON, archConf, indent=3, ensure_ascii=False)
+
+		with open("Config/general.conf", "w", encoding='utf8') as archConf:
+			json.dump(self.generalJSON, archConf, indent=3, ensure_ascii=False)
+
+		with open("Config/pae.conf", "w", encoding='utf8') as archConf:
+			json.dump(self.paeJSON, archConf, indent=3, ensure_ascii=False)
 
 class CSVTable:
 	def __init__(self, filename, columnsName):

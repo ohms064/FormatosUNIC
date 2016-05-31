@@ -7,3 +7,6 @@ class Formato():
 
 	def CreateDoc(self, dataDict, outputNameRef=[""], outputDir=""):
 		pass
+
+	def Flush(self):
+		self.__init__()
