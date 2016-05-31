@@ -184,13 +184,13 @@ class Manager():
 
 	def CreateInscripcion(self):
 		self.inscripcion.CreateDoc(self.inscripcionJSON["PDF Name"], self.inscripcionJSON["Output"])
-		self.inscripcion.Flush()
 		self.inscripcionCSV.WriteRow(self.inscripcion.data.copy())
+		self.inscripcion.Flush()
 
 	def CreatePAE(self):
 		self.pae.CreateDoc(self.paeJSON["PDF Name"], self.paeJSON["Output"])
-		self.pae.Flush()
 		self.paeCSV.WriteRow(self.pae.data.copy())
+		self.pae.Flush()
 
 	def __del__(self):
 		with open("Config/inscripcion.conf", "w", encoding='utf8') as archConf:
@@ -209,9 +209,10 @@ class CSVTable:
 		try:
 			with open(self.filename, "r", encoding='utf8') as csvFile:
 				self.columnsOrder = csvFile.readline().split(",")
+				self.columnsOrder.remove("\n")
 		except FileNotFoundError:
 			with open(self.filename, "w", encoding='utf8') as csvFile:
-				csvFile.write(str("{}," * self.rowLenght).format(*columnsName)[:-1] + "\n")
+				csvFile.write(str("{}," * self.rowLenght).format(*columnsName) + "\n")
 				self.columnsOrder = columnsName
 
 	def WriteRow(self, dictRow):
