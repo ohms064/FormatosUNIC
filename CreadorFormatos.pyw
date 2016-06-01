@@ -179,7 +179,7 @@ class Manager():
 				self.inscripcionJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
 				"PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], \
 				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], "¿Enfermedad?": ["Sí","No"]},\
-				"CSV": "H:/Documentos/Trabajo/UNIC/Outputs/Inscritos.csv",\
+				"CSV": "C:/FormatosUNIC/Outputs/Inscritos.csv",\
 				"Labels": ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
 					"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
 					"Colonia Empresa", "Municipio Empresa", "", "Nombre del Padre", "Teléfono Padre", "Dirección Padre", "Negocio Padre", "Teléfono Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
@@ -202,7 +202,7 @@ class Manager():
 				"Porcentaje" :[ "30", "40", "50", "55"],\
 				"Promedio Mínimo":["8.0", "8.5", "9.0", "9.5"],\
 				"Asistencia Mínima": ["80"]},\
-				"CSV": "H:/Documentos/Trabajo/UNIC/Outputs/PAE.csv",\
+				"CSV": "C:/FormatosUNIC/Outputs/PAE.csv",\
 				"Labels": ["Foto", "Porcentaje", "Nombre", "Matrícula", "Licenciatura", \
 					"Turno", "Semestre", "Generación", "Primer Ciclo Escolar",  "Promedio Mínimo", "Asistencia Mínima", "Fecha"],\
 				"Files" : ["Foto"],\
