@@ -48,14 +48,42 @@ class FormatosGUI(tk.Frame):
 
 	def CreateMenu(self):
 		self.menubar = tk.Menu(self.master)
+
 		self.fileMenu = tk.Menu(self.menubar, tearoff=0)
 		self.fileMenu.add_command(label="Salir", command=self.OnCloseWindow)
+
 		self.formatosMenu = tk.Menu(self.menubar, tearoff=0)
 		self.formatosMenu.add_command(label="Inscripción", command=self.AbrirInscripcion)
 		self.formatosMenu.add_command(label="PAE", command=self.AbrirPAE)
+
+		self.configMenu = tk.Menu(self.menubar, tearoff=0)
+		self.configMenu.add_command(label="Folder Inscripción", command=self.CambiarDestino(self.master, self._manager.inscripcionJSON, title="Inscripción"))
+		self.configMenu.add_command(label="Folder PAE", command=self.CambiarDestino(self.master, self._manager.paeJSON, title="PAE"))
+		self.configMenu.add_separator()
+		self.configMenu.add_command(label="Excel Inscripción", command=self.CambiarDestino(self.master, self._manager.inscripcionJSON, csv=True, title="Inscripcion"))
+		self.configMenu.add_command(label="Excel PAE", command=self.CambiarDestino(self.master, self._manager.paeJSON, csv=True, title="PAE"))
+
 		self.menubar.add_cascade(label="Archivo", menu=self.fileMenu)
 		self.menubar.add_cascade(label="Formatos", menu=self.formatosMenu)
+		self.menubar.add_cascade(label="Configuración", menu=self.configMenu)
+		
 		self.master.config(menu=self.menubar)
+
+	def CambiarDestino(self, master, configFile, csv=False, title="Escoge un archivo"):
+		def File():
+			dirname = fd.askdirectory(parent=master, mustexist=True, title=title)
+			if dirname != "":
+				configFile["Output"] = dirname
+
+		def CSV():
+			dirname = fd.askdirectory(parent=master, mustexist=True, title=title)
+			if dirname != "":
+				dirname += "/{}".format(configFile["CSV"][configFile["CSV"].rfind("/") + 1:] )
+				configFile["CSV"] = dirname
+
+		if csv:
+			return CSV
+		return File
 
 	def AbrirInscripcion(self):
 		self.frame.destroy()
@@ -209,8 +237,13 @@ class CSVTable:
 		try:
 			with open(self.filename, "r", encoding='utf8') as csvFile:
 				self.columnsOrder = csvFile.readline().split(",")
+				if csvFile.tell() == 0:
+					print("Pasó! " + str(csvFile.tell()))
+					raise EmptyFileError
 				self.columnsOrder.remove("\n")
-		except FileNotFoundError:
+
+		except (FileNotFoundError, EmptyFileError):
+			print("mirad")
 			with open(self.filename, "w", encoding='utf8') as csvFile:
 				csvFile.write(str("{}," * self.rowLenght).format(*columnsName) + "\n")
 				self.columnsOrder = columnsName
@@ -225,7 +258,8 @@ class CSVTable:
 			for line in csvFile:
 				yield line
 
-
+class EmptyFileError(Exception):
+	pass
 
 
 if __name__ == "__main__":
