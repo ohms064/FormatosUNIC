@@ -165,21 +165,25 @@ class Manager():
 				self.generalJSON = json.load(archConf)
 				self.generalJSON["Semestre"] = "{}-1".format(self.today.year) if int(self.today.month) > 6 else "{}-2".format(self.today.year - 1)
 
-		except (FileNotFoundError, ValueError) as err:
+		except FileNotFoundError as err:
 			with open("Config/general.conf", "w", encoding='utf8') as archConf:
 				self.generalJSON = {"Choices" : {"Licenciatura": ["Educación","Comercio Internacional", "Contador Público", "Ingeneiría Industrial", "Ciencias de la Comunicación", "Derecho", "Mercadotecnia y Publicidad", "Recursos Humanos"] }}
 				self.generalJSON["Semestre"] = "{}-1".format(self.today.year) if int(self.today.month) > 6 else "{}-2".format(self.today.year - 1)
 				json.dump(self.generalJSON, archConf, indent=3, ensure_ascii=False)
+		except ValueError as err:
+			with open("Config/general.conf", "r") as archConf:
+				self.generalJSON = json.load(archConf)
+				self.generalJSON["Semestre"] = "{}-1".format(self.today.year) if int(self.today.month) > 6 else "{}-2".format(self.today.year - 1)
 
 		try:
 			with open("Config/inscripcion.conf", "r", encoding='utf8') as archConf:
 				self.inscripcionJSON = json.load(archConf)
-		except (FileNotFoundError, ValueError) as err:
+		except FileNotFoundError as err:
 			with open("Config/inscripcion.conf", "w", encoding='utf8') as archConf:
-				self.inscripcionJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
+				self.inscripcionJSON = {"Output" : "/Outputs", "Inscritos" : 0, \
 				"PDF Name": ["Matrícula", "Apellido Paterno", "Apellido Materno", "Nombre"], \
 				"Choices": {"Tipo de Sangre":["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], "¿Enfermedad?": ["Sí","No"]},\
-				"CSV": "C:/FormatosUNIC/Outputs/Inscritos.csv",\
+				"CSV": "/Outputs/Inscritos.csv",\
 				"Labels": ["Matrícula", "Licenciatura", "Semestre", "Generación" , "Foto", "", "Apellido Paterno", "Apellido Materno", "Nombre", "Lugar de Nacimiento", "Fecha de Nacimiento", "Nacionalidad", "", "Calle",\
 					"Número", "Colonia", "Población", "Municipio", "Estado", "C.P.", "Teléfono Particular", "Teléfono Celular", "Correo", "", "Empresa", "Teléfono Empresa", "Calle Empresa", "Número Empresa",\
 					"Colonia Empresa", "Municipio Empresa", "", "Nombre del Padre", "Teléfono Padre", "Dirección Padre", "Negocio Padre", "Teléfono Negocio Padre", "Celular Padre", "Correo Padre", "Nombre de la Madre",\
@@ -190,25 +194,31 @@ class Manager():
 				"Date" : ["Fecha de Nacimiento", "Fecha"],\
 				}
 				json.dump(self.inscripcionJSON, archConf, indent=3, ensure_ascii=False)
+		except ValueError as err:
+			with open("Config/inscripcion.conf", "r") as archConf:
+				self.inscripcionJSON = json.load(archConf)
 
 		try:
 			with open("Config/pae.conf", "r", encoding='utf8') as archConf:
 				self.paeJSON = json.load(archConf)
-		except (FileNotFoundError, ValueError) as err:
+		except FileNotFoundError as err:
 			with open("Config/pae.conf", "w", encoding='utf8') as archConf:
-				self.paeJSON = {"Output" : "H:/Documentos/Trabajo/UNIC/Outputs", "Inscritos" : 0, \
+				self.paeJSON = {"Output" : "/Outputs", "Inscritos" : 0, \
 				"PDF Name": ["Matrícula", "Nombre"], \
 				"Choices": {"Turno":["Vespertino", "Matutino", "Sabatino"], \
 				"Porcentaje" :[ "30", "40", "50", "55"],\
 				"Promedio Mínimo":["8.0", "8.5", "9.0", "9.5"],\
 				"Asistencia Mínima": ["80"]},\
-				"CSV": "C:/FormatosUNIC/Outputs/PAE.csv",\
+				"CSV": "/Outputs/PAE.csv",\
 				"Labels": ["Foto", "Porcentaje", "Nombre", "Matrícula", "Licenciatura", \
 					"Turno", "Semestre", "Generación", "Primer Ciclo Escolar",  "Promedio Mínimo", "Asistencia Mínima", "Fecha"],\
 				"Files" : ["Foto"],\
 				"Date" : ["Fecha"],\
 				}
 				json.dump(self.paeJSON, archConf, indent=3, ensure_ascii=False)
+		except ValueError as err:
+			with open("Config/pae.conf", "r") as archConf:
+				self.paeJSON = json.load(archConf)
 
 	def CreateInscripcion(self):
 		self.inscripcion.CreateDoc(self.inscripcionJSON["PDF Name"], self.inscripcionJSON["Output"])
