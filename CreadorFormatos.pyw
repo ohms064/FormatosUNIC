@@ -43,8 +43,17 @@ class FormatosGUI(tk.Frame):
 		self.CreateWidgets()
 
 	def CreateWidgets(self):
-		self.frame = tk.Frame(self.master)
-		self.frame.grid(row=0, column=0)
+		self.canvas = tk.Canvas(self.master, borderwidth=0)
+		self.frame = tk.Frame(self.canvas)
+		self.hsb = tk.Scrollbar(self.master, orient="horizontal", command=self.canvas.xview)
+		self.canvas.configure(xscrollcommand=self.hsb.set)
+
+		self.canvas.pack(fill="both", expand=True)
+		self.hsb.pack(fill="x")
+
+		self.canvas.create_window((4,4), window=self.frame, anchor="nw")
+		self.frame.bind("<Configure>", self.onFrameConfigure)
+		#self.frame.grid(row=0, column=0)
 
 	def CreateMenu(self):
 		self.menubar = tk.Menu(self.master)
@@ -87,6 +96,8 @@ class FormatosGUI(tk.Frame):
 
 	def AbrirInscripcion(self):
 		self.frame.destroy()
+		self.canvas.destroy()
+		self.hsb.destroy()
 		self.CreateWidgets()
 		keys = self._manager.inscripcionJSON["Labels"]
 		dateKeys = self._manager.inscripcionJSON["Date"]
@@ -105,6 +116,8 @@ class FormatosGUI(tk.Frame):
 
 	def AbrirPAE(self):
 		self.frame.destroy()
+		self.canvas.destroy()
+		self.hsb.destroy()
 		self.CreateWidgets()
 		keys = self._manager.paeJSON["Labels"]
 		dateKeys = self._manager.paeJSON["Date"]
@@ -133,6 +146,10 @@ class FormatosGUI(tk.Frame):
 		del self._manager
 		self.master.destroy()
 		self.master.quit()
+
+	def onFrameConfigure(self, event):
+		'''Reset the scroll region to encompass the inner frame'''
+		self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
 def BeginLoop():
 	root = tk.Tk()
